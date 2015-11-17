@@ -1,30 +1,33 @@
 require 'pry'
 require 'sinatra'
+require 'CSV'
 
 get '/articles' do
-  @articles = File.readlines("articles.csv")
-  @urls = File.readlines("urls.csv")
-  @descriptions = File.readlines("descriptions.csv")
+
+  @articles = []
+  CSV.foreach('articles.csv', headers: true, header_converters: :symbol) do |row|
+    article = row.to_hash
+    @articles << article
+    
+
+  end
+
   erb :index
 end
 
 post '/articles' do
 
-  article = params['article']
+  article_title = params['article_title']
   url = params['url']
   description = params['description']
 
-  File.open("articles.csv", 'a') do |file|
-    file.puts(article)
+  article_array = [article_title,url,description]
+
+  CSV.open("articles.csv", 'a') do |file|
+    file << article_array
+
   end
 
-  File.open("urls.csv", 'a') do |file|
-    file.puts(url)
-  end
-
-  File.open("descriptions.csv", 'a') do |file|
-    file.puts(description)
-  end
 
   redirect '/articles'
 end
